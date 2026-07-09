@@ -1,6 +1,0 @@
-{
-  "appId": "com.panelmaestro.app",
-  "appName": "panel maestro",
-  "webDir": "dist",
-  "bundledWebRuntime": false
-}
