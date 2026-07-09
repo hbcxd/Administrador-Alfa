@@ -4,7 +4,8 @@ import { useProjects } from '../context/ProjectContext';
 export default function ProjectForm() {
   const { addProject } = useProjects();
   const [name, setName] = useState('');
-  const [storageProvider, setStorageProvider] = useState('firebase'); // 'firebase' o 'supabase'
+  const [publicUrl, setPublicUrl] = useState(''); // <-- Nuevo campo para el iFrame
+  const [storageProvider, setStorageProvider] = useState('firebase');
   
   // Estados para credenciales de Firebase
   const [apiKey, setApiKey] = useState('');
@@ -14,7 +15,7 @@ export default function ProjectForm() {
   const [messagingSenderId, setMessagingSenderId] = useState('');
   const [appId, setAppId] = useState('');
 
-  // Estados para credenciales de Supabase (Opcionales)
+  // Estados para credenciales de Supabase
   const [supabaseUrl, setSupabaseUrl] = useState('');
   const [supabaseAnonKey, setSupabaseAnonKey] = useState('');
   const [supabaseBucket, setSupabaseBucket] = useState('');
@@ -25,6 +26,7 @@ export default function ProjectForm() {
     const newProject = {
       id: `proj_${Date.now()}`,
       name,
+      publicUrl, // <-- Guardamos la URL de la página
       storageProvider,
       firebaseConfig: {
         apiKey,
@@ -34,7 +36,6 @@ export default function ProjectForm() {
         messagingSenderId,
         appId
       },
-      // Solo incluimos la configuración de Supabase si fue seleccionada
       supabaseConfig: storageProvider === 'supabase' ? {
         url: supabaseUrl,
         anonKey: supabaseAnonKey,
@@ -43,7 +44,21 @@ export default function ProjectForm() {
     };
 
     addProject(newProject);
-    // Aquí se puede agregar una función para limpiar los campos del formulario
+    
+    // Limpiamos el formulario para el siguiente registro
+    setName('');
+    setPublicUrl('');
+    setApiKey('');
+    setAuthDomain('');
+    setProjectId('');
+    setStorageBucket('');
+    setMessagingSenderId('');
+    setAppId('');
+    setSupabaseUrl('');
+    setSupabaseAnonKey('');
+    setSupabaseBucket('');
+    
+    alert("¡Plataforma registrada con éxito!");
   };
 
   return (
@@ -51,16 +66,30 @@ export default function ProjectForm() {
       <h2 className="text-2xl font-bold mb-6 text-white tracking-tight">Registrar Nueva Página Web</h2>
       
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
-          <label className="block text-sm font-medium text-slate-400 mb-2">Nombre del Proyecto</label>
-          <input 
-            type="text" 
-            value={name} 
-            onChange={(e) => setName(e.target.value)}
-            className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-white transition"
-            placeholder="Ej. Mi Página de Catálogo" 
-            required 
-          />
+        {/* Fila principal: Nombre y URL */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-400 mb-2">Nombre del Proyecto</label>
+            <input 
+              type="text" 
+              value={name} 
+              onChange={(e) => setName(e.target.value)}
+              className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-white transition text-sm"
+              placeholder="Ej. Mi Página de Catálogo" 
+              required 
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-400 mb-2">URL Pública (Para Vista Previa)</label>
+            <input 
+              type="url" 
+              value={publicUrl} 
+              onChange={(e) => setPublicUrl(e.target.value)}
+              className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-white transition text-sm"
+              placeholder="https://tu-pagina.com o http://localhost:3000" 
+              required 
+            />
+          </div>
         </div>
 
         <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-800 space-y-4">
@@ -89,7 +118,7 @@ export default function ProjectForm() {
           </div>
 
           {storageProvider === 'supabase' && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 animate-fadeIn">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
               <input type="text" placeholder="Supabase URL" value={supabaseUrl} onChange={e => setSupabaseUrl(e.target.value)} className="p-3 bg-slate-800 border border-slate-700 rounded-xl text-sm" required />
               <input type="password" placeholder="Anon Key" value={supabaseAnonKey} onChange={e => setSupabaseAnonKey(e.target.value)} className="p-3 bg-slate-800 border border-slate-700 rounded-xl text-sm" required />
               <input type="text" placeholder="Nombre del Bucket de Supabase" value={supabaseBucket} onChange={e => setSupabaseBucket(e.target.value)} className="p-3 bg-slate-800 border border-slate-700 rounded-xl text-sm" required />
