@@ -3,6 +3,7 @@ import { ProjectProvider } from './context/ProjectContext';
 import Sidebar from './components/Sidebar';
 import ProjectForm from './components/ProjectForm';
 import AppearanceForm from './components/AppearanceForm';
+import LivePreview from './components/LivePreview'; // <--- IMPORTAMOS EL COMPONENTE
 
 export default function App() {
   const [view, setView] = useState('config'); // 'config' o 'appearance'
@@ -21,11 +22,9 @@ export default function App() {
             {view === 'appearance' && <AppearanceForm />}
           </div>
 
-          {/* Área Derecha: Vista Previa */}
+          {/* Área Derecha: Vista Previa Activa */}
           <div className="hidden lg:block w-[450px] bg-brand-surface/40 border-l border-slate-900 p-4">
-            <div className="h-full w-full rounded-xl border border-dashed border-slate-800 flex items-center justify-center text-slate-600 text-sm">
-              Espacio de Vista Previa (iFrame público)
-            </div>
+            <LivePreview /> {/* <--- REEMPLAZAMOS EL MARCADOR POR EL COMPONENTE REAL */}
           </div>
         </main>
       </div>
