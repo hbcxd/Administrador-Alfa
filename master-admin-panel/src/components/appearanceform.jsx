@@ -1,100 +1,115 @@
-import React, { useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { initializeApp } from 'firebase/app';
+import { getFirestore, collection, addDoc, getDocs, doc, setDoc, getDoc } from 'firebase/firestore';
+import { getStorage } from 'firebase/storage';
+import { createClient } from '@supabase/supabase-js';
+import { db as masterDb } from '../masterfirebase'; // Conexión a la nube maestra
 
-export default function AppearanceForm() {
-  // Estados locales para los colores (inicializados con los de por defecto)
-  const [primary, setPrimary] = useState('#3b82f6');
-  const [secondary, setSecondary] = useState('#10b981');
-  const [bg, setBg] = useState('#020617');
-  const [surface, setSurface] = useState('#0f172a');
+const ProjectContext = createContext();
 
-  // Función mágica que inyecta los colores seleccionados en el :root de la app
-  const applyTheme = (e) => {
-    e.preventDefault();
+export function ProjectProvider({ children }) {
+  const [projects, setProjects] = useState([]);
+  const [activeProject, setActiveProject] = useState(null);
+  const [currentInstances, setCurrentInstances] = useState({ db: null, storage: null, supabaseClient: null });
+  
+  // Estado global para los colores corporativos del panel maestro
+  const [theme, setTheme] = useState({
+    primary: '#3b82f6',
+    secondary: '#10b981',
+    bg: '#020617',
+    surface: '#0f172a'
+  });
+
+  // Cargar proyectos y colores desde la nube al iniciar el panel
+  useEffect(() => {
+    async function loadMasterData() {
+      if (!masterDb) return;
+      try {
+        // 1. Descargar las plataformas guardadas
+        const querySnapshot = await getDocs(collection(masterDb, 'master_projects'));
+        const loadedProjects = [];
+        querySnapshot.forEach((doc) => {
+          loadedProjects.push({ ...doc.data(), id: doc.id });
+        });
+        setProjects(loadedProjects);
+
+        // 2. Descargar los colores personalizados del panel
+        const themeDoc = await getDoc(doc(masterDb, 'master_settings', 'appearance'));
+        if (themeDoc.exists()) {
+          const cloudTheme = themeDoc.data();
+          setTheme(cloudTheme);
+          
+          // Inyectamos los colores de la nube en las variables de Tailwind
+          document.documentElement.style.setProperty('--color-primary', cloudTheme.primary);
+          document.documentElement.style.setProperty('--color-secondary', cloudTheme.secondary);
+          document.documentElement.style.setProperty('--color-bg', cloudTheme.bg);
+          document.documentElement.style.setProperty('--color-surface', cloudTheme.surface);
+        }
+      } catch (error) {
+        console.error("Error al cargar datos desde la nube maestra:", error);
+      }
+    }
+    loadMasterData();
+  }, []);
+
+  // Guardar un nuevo proyecto directamente en la nube maestra
+  const addProject = async (projectData) => {
+    try {
+      const docRef = await addDoc(collection(masterDb, 'master_projects'), projectData);
+      const newProjectWithId = { ...projectData, id: docRef.id };
+      
+      setProjects((prev) => [...prev, newProjectWithId]);
+      return newProjectWithId;
+    } catch (error) {
+      console.error("Error al guardar plataforma en la nube:", error);
+      alert("No se pudo guardar la plataforma en la nube maestra.");
+    }
+  };
+
+  // Guardar los colores del panel en la nube maestra
+  const updateThemeInCloud = async (newTheme) => {
+    try {
+      await setDoc(doc(masterDb, 'master_settings', 'appearance'), newTheme);
+      setTheme(newTheme);
+      
+      // Aplicar cambios visuales inmediatos
+      document.documentElement.style.setProperty('--color-primary', newTheme.primary);
+      document.documentElement.style.setProperty('--color-secondary', newTheme.secondary);
+      document.documentElement.style.setProperty('--color-bg', newTheme.bg);
+      document.documentElement.style.setProperty('--color-surface', newTheme.surface);
+    } catch (error) {
+      console.error("Error al guardar el diseño en la nube:", error);
+      alert("No se pudo guardar el tema visual.");
+    }
+  };
+
+  // Conectar dinámicamente con los servicios del proyecto hijo seleccionado
+  const selectProject = (project) => {
+    setActiveProject(project);
+
+    const app = initializeApp(project.firebaseConfig, project.id);
+    const db = getFirestore(app);
     
-    document.documentElement.style.setProperty('--color-primary', primary);
-    document.documentElement.style.setProperty('--color-secondary', secondary);
-    document.documentElement.style.setProperty('--color-bg', bg);
-    document.documentElement.style.setProperty('--color-surface', surface);
+    let storage = null;
+    if (project.storageProvider === 'firebase' && project.firebaseConfig.storageBucket) {
+      storage = getStorage(app);
+    }
 
-    // Nota: Aquí guardaremos también este objeto de colores en la base de datos de la plataforma maestra
-    alert("¡Tema aplicado con éxito en la plataforma!");
+    let supabaseClient = null;
+    if (project.storageProvider === 'supabase' && project.supabaseConfig) {
+      supabaseClient = createClient(project.supabaseConfig.url, project.supabaseConfig.anonKey);
+    }
+
+    setCurrentInstances({ db, storage, supabaseClient });
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-8 bg-brand-surface text-slate-100 rounded-2xl shadow-xl border border-slate-800/80 animate-fadeIn">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-white tracking-tight">Personalizar Aspecto de la Plataforma</h2>
-        <p className="text-sm text-slate-400 mt-1">Ajusta los colores corporativos, logos y entornos visuales para adaptarlo a tu gusto técnico.</p>
-      </div>
-
-      <form onSubmit={applyTheme} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-900/40 p-6 rounded-xl border border-slate-800">
-          
-          {/* Selector Color Primario */}
-          <div className="flex items-center justify-between p-3 bg-slate-900 rounded-xl border border-slate-800">
-            <div>
-              <label className="block text-sm font-medium text-slate-300">Color Primario</label>
-              <span className="text-xs text-slate-500">Botones, selecciones y acentos principales</span>
-            </div>
-            <input 
-              type="color" 
-              value={primary} 
-              onChange={(e) => setPrimary(e.target.value)}
-              className="w-12 h-12 bg-transparent border-none cursor-pointer rounded-lg"
-            />
-          </div>
-
-          {/* Selector Color Secundario */}
-          <div className="flex items-center justify-between p-3 bg-slate-900 rounded-xl border border-slate-800">
-            <div>
-              <label className="block text-sm font-medium text-slate-300">Color Secundario</label>
-              <span className="text-xs text-slate-500">Etiquetas, estados de éxito y alternativos</span>
-            </div>
-            <input 
-              type="color" 
-              value={secondary} 
-              onChange={(e) => setSecondary(e.target.value)}
-              className="w-12 h-12 bg-transparent border-none cursor-pointer rounded-lg"
-            />
-          </div>
-
-          {/* Selector Color de Fondo */}
-          <div className="flex items-center justify-between p-3 bg-slate-900 rounded-xl border border-slate-800">
-            <div>
-              <label className="block text-sm font-medium text-slate-300">Fondo General</label>
-              <span className="text-xs text-slate-500">Color del fondo de la computadora (Body)</span>
-            </div>
-            <input 
-              type="color" 
-              value={bg} 
-              onChange={(e) => setBg(e.target.value)}
-              className="w-12 h-12 bg-transparent border-none cursor-pointer rounded-lg"
-            />
-          </div>
-
-          {/* Selector Color de Superficie */}
-          <div className="flex items-center justify-between p-3 bg-slate-900 rounded-xl border border-slate-800">
-            <div>
-              <label className="block text-sm font-medium text-slate-300">Color de Contenedores</label>
-              <span className="text-xs text-slate-500">Barra lateral y tarjetas de formularios</span>
-            </div>
-            <input 
-              type="color" 
-              value={surface} 
-              onChange={(e) => setSurface(e.target.value)}
-              className="w-12 h-12 bg-transparent border-none cursor-pointer rounded-lg"
-            />
-          </div>
-
-        </div>
-
-        <button 
-          type="submit" 
-          className="w-full py-4 bg-brand-primary hover:bg-brand-primary/90 text-white font-semibold rounded-xl shadow-lg transition transform active:scale-95"
-        >
-          Guardar Configuración Visual
-        </button>
-      </form>
-    </div>
+    <ProjectContext.Provider value={{ projects, activeProject, addProject, selectProject, currentInstances, theme, updateThemeInCloud }}>
+      {children}
+    </ProjectContext.Provider>
   );
+}
+
+export function useProjects() {
+  return useContext(ProjectContext);
 }
