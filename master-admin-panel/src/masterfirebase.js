@@ -2,13 +2,14 @@ import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 
 // Estas son las credenciales de la base de datos de tu propio Panel Maestro
-const masterFirebaseConfig = {
-  apiKey: "TU_MASTER_API_KEY",
-  authDomain: "TU_MASTER_AUTH_DOMAIN",
-  projectId: "TU_MASTER_PROJECT_ID",
-  storageBucket: "TU_MASTER_STORAGE_BUCKET",
-  messagingSenderId: "TU_MASTER_MESSAGING_SENDER_ID",
-  appId: "TU_MASTER_APP_ID"
+const firebaseConfig = {
+  apiKey: "AIzaSyAP79oeDD4d6stMPXwMToQhQQTEneb6iww",
+  authDomain: "base-de-datos-maestra-5a5a7.firebaseapp.com",
+  projectId: "base-de-datos-maestra-5a5a7",
+  storageBucket: "base-de-datos-maestra-5a5a7.firebasestorage.app",
+  messagingSenderId: "998538522792",
+  appId: "1:998538522792:web:b80a0239fcc749282b929d",
+  measurementId: "G-TTVVXRQR37"
 };
 
 // Inicializamos la app maestra
