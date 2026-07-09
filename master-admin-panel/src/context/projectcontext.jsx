@@ -1,79 +1,115 @@
-import React, { createContext, useState, useContext } from 'react';
-// Se importan los SDKs necesarios instalados previamente vía npm
-import { initializeApp, getApp, getApps } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { initializeApp } from 'firebase/app';
+import { getFirestore, collection, addDoc, getDocs, doc, setDoc, getDoc } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import { createClient } from '@supabase/supabase-js';
+import { db as masterDb } from '../masterfirebase'; // Conexión a la nube maestra
 
 const ProjectContext = createContext();
 
-export const ProjectProvider = ({ children }) => {
-  const [projects, setProjects] = useState([]); // Lista de todas las páginas registradas
-  const [activeProject, setActiveProject] = useState(null); // Proyecto en edición actual
-  const [currentInstances, setCurrentInstances] = useState({
-    db: null,
-    storage: null,
-    supabaseClient: null
+export function ProjectProvider({ children }) {
+  const [projects, setProjects] = useState([]);
+  const [activeProject, setActiveProject] = useState(null);
+  const [currentInstances, setCurrentInstances] = useState({ db: null, storage: null, supabaseClient: null });
+  
+  // Estado global para los colores corporativos del panel maestro
+  const [theme, setTheme] = useState({
+    primary: '#3b82f6',
+    secondary: '#10b981',
+    bg: '#020617',
+    surface: '#0f172a'
   });
 
-  // Función para conectar y activar los servicios del proyecto seleccionado
-  const selectProject = (project) => {
-    setActiveProject(project);
-    
-    let dbInstance = null;
-    let storageInstance = null;
-    let supabaseInstance = null;
+  // Cargar proyectos y colores desde la nube al iniciar el panel
+  useEffect(() => {
+    async function loadMasterData() {
+      if (!masterDb) return;
+      try {
+        // 1. Descargar las plataformas guardadas
+        const querySnapshot = await getDocs(collection(masterDb, 'master_projects'));
+        const loadedProjects = [];
+        querySnapshot.forEach((doc) => {
+          loadedProjects.push({ ...doc.data(), id: doc.id });
+        });
+        setProjects(loadedProjects);
 
-    // 1. Inicialización dinámica de Firebase para el proyecto seleccionado
-    if (project.firebaseConfig) {
-      const appName = project.id; // Usamos el ID del proyecto como nombre único de la instancia
-      let fbApp;
-      
-      if (getApps().find(app => app.name === appName)) {
-        fbApp = getApp(appName);
-      } else {
-        fbApp = initializeApp(project.firebaseConfig, appName);
-      }
-      
-      dbInstance = getFirestore(fbApp);
-      
-      // Si eligió Firebase para las imágenes, inicializamos su Storage
-      if (project.storageProvider === 'firebase') {
-        storageInstance = getStorage(fbApp);
+        // 2. Descargar los colores personalizados del panel
+        const themeDoc = await getDoc(doc(masterDb, 'master_settings', 'appearance'));
+        if (themeDoc.exists()) {
+          const cloudTheme = themeDoc.data();
+          setTheme(cloudTheme);
+          
+          // Inyectamos los colores de la nube en las variables de Tailwind
+          document.documentElement.style.setProperty('--color-primary', cloudTheme.primary);
+          document.documentElement.style.setProperty('--color-secondary', cloudTheme.secondary);
+          document.documentElement.style.setProperty('--color-bg', cloudTheme.bg);
+          document.documentElement.style.setProperty('--color-surface', cloudTheme.surface);
+        }
+      } catch (error) {
+        console.error("Error al cargar datos desde la nube maestra:", error);
       }
     }
+    loadMasterData();
+  }, []);
 
-    // 2. Inicialización dinámica de Supabase si fue el proveedor elegido para imágenes
-    if (project.storageProvider === 'supabase' && project.supabaseConfig) {
-      supabaseInstance = createClient(
-        project.supabaseConfig.url, 
-        project.supabaseConfig.anonKey
-      );
+  // Guardar un nuevo proyecto directamente en la nube maestra
+  const addProject = async (projectData) => {
+    try {
+      const docRef = await addDoc(collection(masterDb, 'master_projects'), projectData);
+      const newProjectWithId = { ...projectData, id: docRef.id };
+      
+      setProjects((prev) => [...prev, newProjectWithId]);
+      return newProjectWithId;
+    } catch (error) {
+      console.error("Error al guardar plataforma en la nube:", error);
+      alert("No se pudo guardar la plataforma en la nube maestra.");
     }
-
-    // Guardamos las instancias activas en el estado para usarlas en los formularios de edición
-    setCurrentInstances({
-      db: dbInstance,
-      storage: storageInstance,
-      supabaseClient: supabaseInstance
-    });
   };
 
-  const addProject = (newProject) => {
-    setProjects([...projects, newProject]);
+  // Guardar los colores del panel en la nube maestra
+  const updateThemeInCloud = async (newTheme) => {
+    try {
+      await setDoc(doc(masterDb, 'master_settings', 'appearance'), newTheme);
+      setTheme(newTheme);
+      
+      // Aplicar cambios visuales inmediatos
+      document.documentElement.style.setProperty('--color-primary', newTheme.primary);
+      document.documentElement.style.setProperty('--color-secondary', newTheme.secondary);
+      document.documentElement.style.setProperty('--color-bg', newTheme.bg);
+      document.documentElement.style.setProperty('--color-surface', newTheme.surface);
+    } catch (error) {
+      console.error("Error al guardar el diseño en la nube:", error);
+      alert("No se pudo guardar el tema visual.");
+    }
+  };
+
+  // Conectar dinámicamente con los servicios del proyecto hijo seleccionado
+  const selectProject = (project) => {
+    setActiveProject(project);
+
+    const app = initializeApp(project.firebaseConfig, project.id);
+    const db = getFirestore(app);
+    
+    let storage = null;
+    if (project.storageProvider === 'firebase' && project.firebaseConfig.storageBucket) {
+      storage = getStorage(app);
+    }
+
+    let supabaseClient = null;
+    if (project.storageProvider === 'supabase' && project.supabaseConfig) {
+      supabaseClient = createClient(project.supabaseConfig.url, project.supabaseConfig.anonKey);
+    }
+
+    setCurrentInstances({ db, storage, supabaseClient });
   };
 
   return (
-    <ProjectContext.Provider value={{ 
-      projects, 
-      activeProject, 
-      currentInstances, 
-      addProject, 
-      selectProject 
-    }}>
+    <ProjectContext.Provider value={{ projects, activeProject, addProject, selectProject, currentInstances, theme, updateThemeInCloud }}>
       {children}
     </ProjectContext.Provider>
   );
-};
+}
 
-export const useProjects = () => useContext(ProjectContext);
+export function useProjects() {
+  return useContext(ProjectContext);
+}
