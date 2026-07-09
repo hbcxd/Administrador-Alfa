@@ -1,6 +1,7 @@
 import React from 'react';
-import { useProjects } from '../context/ProjectContext';
-import MediaUploader from './MediaUploader';
+import { useProjects } from '../context/projectcontext';
+import MediaUploader from './mediauploader';      // Ruta en minúscula
+import FirestoreManager from './firestoremanager'; // <-- IMPORTAMOS EL NUEVO COMPONENTE
 
 export default function ProjectManager() {
   const { activeProject } = useProjects();
@@ -13,10 +14,11 @@ export default function ProjectManager() {
     );
   }
 
-  // Función que se ejecutará cuando la imagen se suba con éxito
   const handleUrlRetrieved = (url) => {
     console.log("URL de la imagen lista para guardarse en Firestore:", url);
-    // Aquí conectaremos la lógica para guardar la URL en la colección correspondiente de Firestore
+    // Tip de oro: El usuario puede copiar esta URL que devuelve el cargador
+    // y ponerla como valor en cualquier campo del FirestoreManager abajo.
+    alert(`Copia esta URL si quieres guardarla en un campo: \n\n${url}`);
   };
 
   return (
@@ -46,15 +48,11 @@ export default function ProjectManager() {
           </div>
         </div>
 
-        {/* Lado Derecho: Contenido y Base de Datos (Estructura base) */}
-        <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4">
-          <h3 className="text-lg font-semibold text-white">Estructura de Datos (Firestore)</h3>
-          <p className="text-sm text-slate-400">Aquí podrás interactuar con las colecciones específicas de esta página web de manera dinámica.</p>
-          
-          <div className="p-4 bg-slate-950/60 rounded-xl border border-slate-800 flex flex-col items-center justify-center text-center text-slate-500 h-48 border-dashed">
-            <span>⚙️</span>
-            <p className="text-xs mt-2">Módulo de colecciones dinámicas listo para ser enlazado</p>
-          </div>
+        {/* Lado Derecho: Contenido y Base de Datos Dinámica */}
+        <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl">
+          <h3 className="text-lg font-semibold text-white mb-4">Estructura de Datos (Firestore)</h3>
+          {/* REEMPLAZAMOS EL MARCADOR POR EL COMPONENTE COMPLETO */}
+          <FirestoreManager /> 
         </div>
 
       </div>
