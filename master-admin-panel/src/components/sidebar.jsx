@@ -1,12 +1,12 @@
 import React from 'react';
-import { useProjects } from '../context/ProjectContext';
+import { useProjects } from '../context/projectcontext';
 
 export default function Sidebar({ setView }) {
   const { projects, activeProject, selectProject } = useProjects();
 
   const handleProjectSelect = (proj) => {
     selectProject(proj);
-    setView('manage'); // <-- Cambia automáticamente a la vista de gestión del proyecto
+    setView('manage');
   };
 
   return (
@@ -36,6 +36,13 @@ export default function Sidebar({ setView }) {
             className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium hover:bg-slate-800 hover:text-white transition"
           >
             <span>🎨 Personalizar Panel</span>
+          </button>
+          {/* NUEVO BOTÓN DE INSTRUCCIONES */}
+          <button 
+            onClick={() => setView('instructions')}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium hover:bg-slate-800 hover:text-white transition"
+          >
+            <span>📖 Instrucciones y Reglas</span>
           </button>
         </nav>
 
