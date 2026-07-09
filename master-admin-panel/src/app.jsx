@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import { ProjectProvider } from './context/projectcontext'; // Ruta en minúscula
-import Sidebar from './components/sidebar';               // Ruta en minúscula
-import ProjectForm from './components/projectform';         // Ruta en minúscula
-import AppearanceForm from './components/appearanceform';   // Ruta en minúscula
-import ProjectManager from './components/projectmanager';   // Ruta en minúscula
-import LivePreview from './components/livepreview';         // Ruta en minúscula
+import { ProjectProvider } from './context/projectcontext';
+import Sidebar from './components/sidebar';
+import ProjectForm from './components/projectform';
+import AppearanceForm from './components/appearanceform';
+import ProjectManager from './components/projectmanager';
+import Instructions from './components/instructions'; // <-- IMPORTAMOS LAS INSTRUCCIONES
+import LivePreview from './components/livepreview';
 
 export default function App() {
-  const [view, setView] = useState('config'); // 'config', 'appearance' o 'manage'
+  const [view, setView] = useState('config'); // 'config', 'appearance', 'manage' o 'instructions'
 
   return (
     <ProjectProvider>
@@ -22,6 +23,7 @@ export default function App() {
             {view === 'config' && <ProjectForm />}
             {view === 'appearance' && <AppearanceForm />}
             {view === 'manage' && <ProjectManager />}
+            {view === 'instructions' && <Instructions />} {/* <-- RENDERIZADO DEL MANUAL */}
           </div>
 
           {/* Área Derecha: Vista Previa Activa */}
