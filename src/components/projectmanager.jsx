@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useProjects } from '../context/projectcontext';
 
+// INCORPORACIÓN DE LAS DOS NUEVAS HERRAMIENTAS
+import SecurityConfigForm from './SecurityConfigForm';
+import ProjectContentForm from './ProjectContentForm';
+
 export default function ProjectManager() {
   const { activeProject, updateProject } = useProjects();
   const [isEditing, setIsEditing] = useState(false);
@@ -115,6 +119,12 @@ export default function ProjectManager() {
         </div>
         <p className="text-[10px] text-slate-500 mt-4 italic">Nota: Los cambios de diseño de la app hija se guardan automáticamente al mover el selector de color.</p>
       </div>
+
+      {/* BLOQUE NUEVO 1: SELECTOR DE SEGURIDAD Y PRIVACIDAD */}
+      <SecurityConfigForm plataformaId={activeProject.id} />
+
+      {/* BLOQUE NUEVO 2: CREADOR DE MENÚS Y BLOQUES MULTIMEDIA DE SUPABASE */}
+      <ProjectContentForm plataformaId={activeProject.id} />
 
     </div>
   );
