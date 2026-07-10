@@ -3,19 +3,20 @@ import React, { useState } from 'react';
 export default function Instructions() {
   const [activeTab, setActiveTab] = useState('steps');
 
-  // Código plantilla para las páginas hijas
+  // Plantilla de código que copiarás para las webs hijas (ya incluye tus llaves reales)
   const daughterTemplateCode = `import React, { useState, useEffect } from 'react';
 import { initializeApp } from 'firebase/app';
 import { getFirestore, doc, onSnapshot } from 'firebase/firestore';
 
-// 1. CREDENCIALES COMPARTIDAS (Usa las mismas de tu Panel Maestro)
+// 1. CREDENCIALES DE TU BASE DE DATOS MAESTRA
 const firebaseConfig = {
-  apiKey: "TU_API_KEY_DEL_PANEL",
-  authDomain: "TU_AUTH_DOMAIN_DEL_PANEL",
-  projectId: "TU_PROJECT_ID_DEL_PANEL",
-  storageBucket: "TU_STORAGE_BUCKET_DEL_PANEL",
-  messagingSenderId: "TU_MESSAGING_SENDER_ID_DEL_PANEL",
-  appId: "TU_APP_ID_DEL_PANEL"
+  apiKey: "AIzaSyAP79oeDD4d6stMPXwMToQhQQTEneb6iww",
+  authDomain: "base-de-datos-maestra-5a5a7.firebaseapp.com",
+  projectId: "base-de-datos-maestra-5a5a7",
+  storageBucket: "base-de-datos-maestra-5a5a7.firebasestorage.app",
+  messagingSenderId: "998538522792",
+  appId: "1:998538522792:web:b80a0239fcc749282b929d",
+  measurementId: "G-TTVVXRQR37"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -29,7 +30,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Escucha únicamente el documento que le corresponde a esta página
+    // Escucha únicamente el documento asignado a este proyecto
     const docRef = doc(db, "plataformas", CONFIG_DOCUMENT_ID);
     const unsubscribe = onSnapshot(docRef, (docSnap) => {
       if (docSnap.exists()) {
@@ -40,7 +41,13 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  if (loading) return <div className="h-screen w-screen flex items-center justify-center bg-slate-950 text-white">Cargando...</div>;
+  if (loading) {
+    return (
+      <div className="h-screen w-screen flex items-center justify-center bg-slate-950 text-white">
+        <p className="animate-pulse text-xs">Cargando identidad visual...</p>
+      </div>
+    );
+  }
 
   const dynamicStyles = \`
     :root {
@@ -67,7 +74,7 @@ export default function App() {
   );
 }`;
 
-  // Código de las reglas de seguridad de Firebase
+  // Plantilla de las reglas de seguridad
   const firebaseRulesCode = `rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -130,7 +137,7 @@ service cloud.firestore {
             <div className="bg-slate-950 p-4 rounded-xl border border-slate-900 space-y-2">
               <h4 className="text-xs font-bold text-white">¿Qué es el <code>CONFIG_DOCUMENT_ID</code>?</h4>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Cuando registras una plataforma en tu panel, Firebase genera un código automático único para ese cliente (un ID largo). Ese ID es el <code className="text-brand-primary font-mono">CONFIG_DOCUMENT_ID</code>. Al colocarlo en el código de la nueva web, le estás diciendo al navegador: <em>"De todos los datos que hay en la base de datos, lee únicamente los colores y textos de esta casilla"</em>. Así es como una página se diferencia de otra.
+                Cuando registras una plataforma en tu panel, Firebase genera un código automático único para ese proyecto. Al colocarlo en la variable de la nueva web, le estás diciendo al navegador que lea únicamente las configuraciones estéticas de esa casilla. Así es como una página se diferencia de otra.
               </p>
             </div>
           </div>
@@ -161,10 +168,10 @@ service cloud.firestore {
           <div className="flex items-center justify-between border-b border-slate-800/60 pb-3">
             <div>
               <h3 className="text-sm font-bold text-white">Estructura para la Nueva Web (`App.jsx`)</h3>
-              <p className="text-[11px] text-slate-400">Usa este código exacto cada vez que vayas a levantar un sitio web hijo desde cero.</p>
+              <p className="text-[11px] text-slate-400">Este código ya viene listo con tus credenciales. Solo cópialo y pégalo en tu nuevo proyecto.</p>
             </div>
-            <button onClick={() => copyToClipboard(daughterTemplateCode, '¡Plantilla de código copiada!')} className="bg-brand-primary text-white text-xs px-3 py-1.5 rounded-xl font-medium shadow-md">
-              📋 Copiar
+            <button onClick={() => copyToClipboard(daughterTemplateCode, '¡Plantilla de código copiada con éxito!')} className="bg-brand-primary text-white text-xs px-3 py-1.5 rounded-xl font-medium shadow-md">
+              📋 Copiar Código
             </button>
           </div>
           <pre className="text-xs bg-slate-950 p-4 rounded-xl border border-slate-900 overflow-x-auto text-emerald-400 font-mono max-h-96 overflow-y-auto leading-relaxed">
@@ -179,7 +186,7 @@ service cloud.firestore {
           <div className="flex items-center justify-between border-b border-slate-800/60 pb-3">
             <div>
               <h3 className="text-sm font-bold text-white">Reglas de Producción de Firestore</h3>
-              <p className="text-[11px] text-slate-400">Pega esto en la pestaña "Rules" de tu Firebase para blindar los accesos públicos.</p>
+              <p className="text-[11px] text-slate-400">Pega esto en la pestaña "Rules" de tu Firebase para restringir los accesos públicos.</p>
             </div>
             <button onClick={() => copyToClipboard(firebaseRulesCode, '¡Reglas de seguridad copiadas!')} className="bg-brand-primary text-white text-xs px-3 py-1.5 rounded-xl font-medium shadow-md">
               📋 Copiar Reglas
@@ -189,7 +196,7 @@ service cloud.firestore {
           <div className="bg-slate-950/70 p-4 rounded-xl border border-slate-900 space-y-2">
             <h4 className="text-xs font-bold text-amber-400">💡 Instrucción Importante para tu UID:</h4>
             <p className="text-[11px] text-slate-400 leading-relaxed">
-              Recuerda ir a <strong>Authentication -> Users</strong> en tu Firebase, copia tu código de usuario único y reemplázalo en el texto de abajo donde dice <code className="text-white">'TU_UID_DE_ADMINISTRADOR_AQUÍ'</code> antes de publicar las reglas.
+              Recuerda ir a <strong>Authentication -> Users</strong> en tu Firebase, busca tu código de usuario único y reemplázalo en el texto de abajo donde dice <code className="text-white">'TU_UID_DE_ADMINISTRADOR_AQUÍ'</code> antes de publicar.
             </p>
           </div>
 
