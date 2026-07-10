@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { ProjectProvider, useProjects } from './context/projectcontext';
-import { auth } from './config/firebase'; // Asegúrate de importar tu auth configurado
+import { auth } from './config/firebase'; // Conexión directa con tu Firebase configurado
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 
+// Importación de todos tus componentes del panel
 import Sidebar from './components/sidebar';
 import ProjectForm from './components/projectform';
 import AppearanceForm from './components/appearanceform';
 import ProjectManager from './components/projectmanager';
 import Instructions from './components/instructions';
 
+// ==========================================
 // 1. COMPONENTE DE INICIO DE SESIÓN (LOGIN)
+// ==========================================
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -25,7 +28,7 @@ function Login() {
       await signInWithEmailAndPassword(auth, email, password);
     } catch (err) {
       console.error(err);
-      setError('Credenciales incorrectas. Por favor, verifique e intente de nuevo.');
+      setError('Credenciales incorrectas. Por favor, verifique de nuevo e intente otra vez.');
     } finally {
       setLoading(false);
     }
@@ -33,7 +36,7 @@ function Login() {
 
   return (
     <div className="h-screen w-screen flex items-center justify-center bg-slate-950 text-slate-100 font-sans p-4 relative overflow-hidden">
-      {/* Efecto de fondo decorativo */}
+      {/* Efectos visuales de fondo */}
       <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none"></div>
       <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-emerald-600/10 rounded-full blur-[120px] pointer-events-none"></div>
 
@@ -87,19 +90,21 @@ function Login() {
   );
 }
 
-// 2. CONTENIDO PRINCIPAL DEL PANEL (SÓLO SI ESTÁ AUTENTICADO)
+// ==========================================
+// 2. CONTENIDO PRINCIPAL (PANEL MAESTRO)
+// ==========================================
 function AppContent() {
   const { masterSettings } = useProjects();
   const [view, setView] = useState('config');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const handleLogout = async () => {
-    if (window.confirm('¿Está seguro de que desea cerrar sesión?')) {
+    if (window.confirm('¿Está seguro de que desea cerrar sesión en el panel?')) {
       await signOut(auth);
     }
   };
 
-  // Inyección de estilos CSS dinámicos basados en tu base de datos
+  // Inyección de estilos CSS basados en las preferencias de tu base de datos
   const dynamicStyles = `
     :root {
       --b-bg: ${masterSettings.bgColor};
@@ -133,15 +138,15 @@ function AppContent() {
         <Sidebar setView={(v) => { setView(v); setIsSidebarOpen(false); }} closeSidebar={() => setIsSidebarOpen(false)} />
       </div>
 
-      {/* Capa oscura para teléfonos */}
+      {/* Capa oscura de fondo para menús móviles */}
       {isSidebarOpen && (
         <div onClick={() => setIsSidebarOpen(false)} className="fixed inset-0 bg-black/60 z-45 lg:hidden" />
       )}
 
-      {/* Bloque de Trabajo */}
+      {/* Área de Trabajo de la plataforma */}
       <div className="flex-1 flex flex-col overflow-hidden">
         
-        {/* Encabezado Principal */}
+        {/* Encabezado */}
         <header className="bg-brand-surface border-b border-slate-800/50 p-4 flex items-center justify-between z-40 shadow-md">
           <div className="flex items-center gap-3">
             <button onClick={() => setIsSidebarOpen(true)} className="text-white text-2xl p-1 lg:hidden">☰</button>
@@ -149,7 +154,7 @@ function AppContent() {
             <span className="text-xs text-slate-400 hidden lg:block">| {masterSettings.brandSubtitle}</span>
           </div>
           
-          {/* Botón de Cerrar Sesión */}
+          {/* Botón de Salida */}
           <button 
             onClick={handleLogout}
             className="bg-slate-950 hover:bg-red-950/30 text-slate-400 hover:text-red-400 border border-slate-800 hover:border-red-900/50 px-3 py-1.5 rounded-xl text-xs font-semibold transition"
@@ -158,7 +163,7 @@ function AppContent() {
           </button>
         </header>
 
-        {/* Contenido Dinámico */}
+        {/* Carga Dinámica de Vistas */}
         <div className="flex-1 p-4 md:p-8 overflow-y-auto bg-brand-bg">
           {view === 'config' && <ProjectForm />}
           {view === 'appearance' && <AppearanceForm />}
@@ -171,18 +176,15 @@ function AppContent() {
   );
 }
 
+// ==========================================
 // 3. ENRUTADOR RAÍZ CON VERIFICACIÓN DE SESIÓN
+// ==========================================
 export default function App() {
   const [user, setUser] = useState(null);
   const [initializing, setInitializing] = useState(true);
 
   useEffect(() => {
-    // Escucha si hay una sesión activa en el navegador
-    const unsubscribe = onSnapshot(auth, (currentUser) => {
-      // Nota: Tradicionalmente se usa onAuthStateChanged(auth, ...), 
-      // si prefieres puedes usarlo de forma directa:
-    });
-
+    // Revisa limpia y correctamente si hay una sesión activa de Firebase en el navegador
     const unsubscribeAuth = onAuthStateChanged(auth, (userSnap) => {
       setUser(userSnap);
       setInitializing(false);
@@ -191,7 +193,7 @@ export default function App() {
     return () => unsubscribeAuth();
   }, []);
 
-  // Pantalla de carga inicial mientras Firebase verifica la sesión
+  // Pantalla limpia de carga mientras Firebase responde
   if (initializing) {
     return (
       <div className="h-screen w-screen flex items-center justify-center bg-slate-950 text-white font-sans">
@@ -203,7 +205,7 @@ export default function App() {
     );
   }
 
-  // Filtro definitivo: Si no hay usuario, directo al Login. Si hay usuario, entra al sistema.
+  // Filtro Maestro de Entrada
   return user ? (
     <ProjectProvider>
       <AppContent />
