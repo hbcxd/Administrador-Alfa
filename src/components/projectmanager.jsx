@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useProjects } from '../context/projectcontext';
 
-// INCORPORACIÓN DE LAS DOS NUEVAS HERRAMIENTAS
-import SecurityConfigForm from './securityconfigForm';
+// INCORPORACIÓN DE LAS DOS NUEVAS HERRAMIENTAS (CORREGIDO EN MINÚSCULAS)
+import SecurityConfigForm from './securityconfigform';
 import ProjectContentForm from './projectcontentform';
 
 export default function ProjectManager() {
