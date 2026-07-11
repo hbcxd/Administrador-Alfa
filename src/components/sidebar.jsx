@@ -27,6 +27,12 @@ export default function Sidebar({ setView, closeSidebar }) {
           <button onClick={() => setView('config')} className="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium hover:bg-slate-800 hover:text-white transition">
             <span>➕ Añadir Plataforma</span>
           </button>
+          
+          {/* 👇 NUEVO BOTÓN: CONECTA DIRECTO CON TU CONSOLA DE PONER Y QUITAR CARACTERÍSTICAS */}
+          <button onClick={() => setView('plataforma')} className="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium hover:bg-slate-800 hover:text-white transition">
+            <span>🌐 Administrar Características</span>
+          </button>
+
           <button onClick={() => setView('appearance')} className="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium hover:bg-slate-800 hover:text-white transition">
             <span>🎨 Personalizar Panel</span>
           </button>
