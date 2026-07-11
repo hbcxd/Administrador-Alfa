@@ -10,6 +10,9 @@ import AppearanceForm from './components/appearanceform';
 import ProjectManager from './components/projectmanager';
 import Instructions from './components/instructions';
 
+// 👇 1. IMPORTAMOS TU NUEVA CONSOLA MULTI-PÁGINA (En minúsculas estrictas)
+import AdminPlataforma from './adminplataforma';
+
 // ==========================================
 // 1. COMPONENTE DE INICIO DE SESIÓN (LOGIN)
 // ==========================================
@@ -36,7 +39,6 @@ function Login() {
 
   return (
     <div className="h-screen w-screen flex items-center justify-center bg-slate-950 text-slate-100 font-sans p-4 relative overflow-hidden">
-      {/* Efectos visuales de fondo */}
       <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none"></div>
       <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-emerald-600/10 rounded-full blur-[120px] pointer-events-none"></div>
 
@@ -95,6 +97,7 @@ function Login() {
 // ==========================================
 function AppContent() {
   const { masterSettings } = useProjects();
+  // Puedes cambiar el estado inicial aquí a 'plataforma' si quieres que sea lo primero que se vea al entrar
   const [view, setView] = useState('config');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -104,7 +107,6 @@ function AppContent() {
     }
   };
 
-  // Inyección de estilos CSS basados en las preferencias de tu base de datos
   const dynamicStyles = `
     :root {
       --b-bg: ${masterSettings.bgColor};
@@ -154,7 +156,6 @@ function AppContent() {
             <span className="text-xs text-slate-400 hidden lg:block">| {masterSettings.brandSubtitle}</span>
           </div>
           
-          {/* Botón de Salida */}
           <button 
             onClick={handleLogout}
             className="bg-slate-950 hover:bg-red-950/30 text-slate-400 hover:text-red-400 border border-slate-800 hover:border-red-900/50 px-3 py-1.5 rounded-xl text-xs font-semibold transition"
@@ -169,6 +170,9 @@ function AppContent() {
           {view === 'appearance' && <AppearanceForm />}
           {view === 'manage' && <ProjectManager />}
           {view === 'instructions' && <Instructions />}
+          
+          {/* 👇 2. INYECTAMOS EL COMPONENTE ASOCIADO A LA VISTA 'plataforma' */}
+          {view === 'plataforma' && <AdminPlataforma />}
         </div>
       </div>
 
@@ -184,7 +188,6 @@ export default function App() {
   const [initializing, setInitializing] = useState(true);
 
   useEffect(() => {
-    // Revisa limpia y correctamente si hay una sesión activa de Firebase en el navegador
     const unsubscribeAuth = onAuthStateChanged(auth, (userSnap) => {
       setUser(userSnap);
       setInitializing(false);
@@ -193,7 +196,6 @@ export default function App() {
     return () => unsubscribeAuth();
   }, []);
 
-  // Pantalla limpia de carga mientras Firebase responde
   if (initializing) {
     return (
       <div className="h-screen w-screen flex items-center justify-center bg-slate-950 text-white font-sans">
@@ -205,7 +207,6 @@ export default function App() {
     );
   }
 
-  // Filtro Maestro de Entrada
   return user ? (
     <ProjectProvider>
       <AppContent />
