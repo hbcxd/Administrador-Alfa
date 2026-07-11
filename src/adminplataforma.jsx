@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { db } from './firebaseconfig';
+// ✅ CORREGIDO: Ahora apunta a tu configuración centralizada real
+import { db } from './config/firebase'; 
 import { collection, doc, onSnapshot, updateDoc, getDocs } from 'firebase/firestore';
 
 export default function AdminPlataforma() {
@@ -213,7 +214,7 @@ export default function AdminPlataforma() {
               <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4 shadow-lg">
                 <div>
                   <h2 className="text-base font-bold text-white">📋 Características y Módulos Instalados</h2>
-                  <p className="text-xs text-slate-400 mt-1">Aquí ves exactamente qué tiene la página web hija en este momento. Puedes eliminar cualquier elemento de inmediato.</p>
+                  <p className="text-xs text-slate-400 mt-1">Aquí ves exactamente qué tiene la página web hija en este momento. Puedes eliminar cualquier element de inmediato.</p>
                 </div>
 
                 <div className="space-y-3 pt-2">
